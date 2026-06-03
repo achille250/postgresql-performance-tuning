@@ -1,0 +1,72 @@
+CREATE OR REPLACE VIEW  account_item
+ AS
+SELECT 
+acc.id,
+kls.code AS class_code,
+kls.name AS class_name, 
+kls.account_group AS class_account_group, 
+kls.account_type AS class_account_type,  
+hdg.code as heading_code, 
+hdg.name as heading_name,
+hdg.account_group as heading_account_group,
+hdg.account_type as heading_account_type,
+shd.code as sub_heading_code,
+shd.name as sub_heading_name,
+shd.account_group as sub_heading_group,
+shd.account_type as sub_heading_account_type,
+acc.code as account_code,
+acc.name as account_name,
+acc.account_group,
+acc.account_type
+FROM acc_account_item kls INNER JOIN acc_account_item hdg 
+ON hdg.parent_id = kls.id AND hdg.account_group ='HEADING' AND kls.account_group ='CLASS'
+INNER JOIN acc_account_item shd ON shd.parent_id = hdg.id AND shd.account_group ='SUB_HEADING' 
+INNER JOIN acc_account_item acc ON acc.parent_id = shd.id AND acc.account_group ='ACCOUNT'
+ORDER BY kls.code, hdg.code, shd.code, acc.code;
+
+
+
+create or replace view mon_balance as 
+select ae.full_name,la.account_number,la.account_name,la.account_balance, sum( td.detail_amount) as Total_balance,pro.current_balance from acc_transaction_detail td
+inner join acc_ledger_account la on la.id=td.ledger_account_id 
+inner join adm_admin_entity ae on la.entity_id = ae.id
+inner join pro_product_account pro on td.ledger_account_id =detailed_account_id
+--where td.ledger_account_id ='0005e352-00b5-4fee-927b-d9395b586ca2'
+group by  ae.full_name,la.account_number,la.account_name,la.account_balance,pro.current_balance
+having sum( td.detail_amount) <> la.account_balance
+
+
+create or replace view mon_detailed_account as 
+select ae.full_name,la.account_number,la.account_name,la.account_balance,la.account_role,la.control_account_id
+from acc_ledger_account la INNER JOIN adm_admin_entity ae ON la.entity_id = ae.id
+where la.account_role='DETAILED_ACCOUNT' and la.control_account_id is null
+
+union 
+select ae.full_name,la.account_number,la.account_name,la.account_balance,la.account_role,la.control_account_id
+from acc_ledger_account la INNER JOIN adm_admin_entity ae ON la.entity_id = ae.id
+where la.account_role in ('CASH_ACCOUNT','GENERAL_LEDGER_ACCOUNT','CONTROL_ACCOUNT') 
+and la.control_account_id is not null
+
+
+
+
+
+
+
+create or replace view ledger_product_balance as 
+select ae.full_name,pro.account_number,la.account_name,la.account_balance as ledger_balance
+,pro.current_balance as product_balance from acc_ledger_account la
+inner join adm_admin_entity ae on la.entity_id = ae.id
+inner join pro_product_account pro on la.id =pro.detailed_account_id
+where pro.current_balance <> abs(la.account_balance)
+
+
+
+create or replace view ledger_transaction_balalance as 
+select ae.full_name,pro.account_number,la.account_name,la.account_balance as ledger_balance,
+sum( td.detail_amount) as Total_detailed_balance,pro.current_balance from acc_transaction_detail td
+inner join acc_ledger_account la on la.id=td.ledger_account_id 
+inner join adm_admin_entity ae on la.entity_id = ae.id
+inner join pro_product_account pro on td.ledger_account_id =detailed_account_id
+group by  ae.full_name,la.account_number,la.account_name,la.account_balance,pro.account_number,pro.current_balance
+having sum( td.detail_amount) <> (la.account_balance)

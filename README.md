@@ -1,4 +1,4 @@
-﻿# postgresql-performance-tuning
+# postgresql-performance-tuning
 
 Query optimization, indexing strategies & EXPLAIN ANALYZE
 
