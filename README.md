@@ -73,9 +73,3 @@ See `examples/ACCOUNTING_MODULE_CONSTRAINTS.sql` for real-world constraint namin
 | [postgresql-monitoring-stack](https://github.com/achille250/postgresql-monitoring-stack) | Prometheus, pgBadger |
 | [postgresql-ha-replication](https://github.com/achille250/postgresql-ha-replication) | Replication lag SQL |
 | [postgresql-data-migration](https://github.com/achille250/postgresql-data-migration) | Bulk data moves |
-
----
-
-## License
-
-MIT — see [LICENSE](LICENSE).
